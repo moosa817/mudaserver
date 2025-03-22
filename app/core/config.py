@@ -13,11 +13,7 @@ class Settings(BaseSettings):
     SECRET_KEY: str
 
     # Database
-    DATABASE_NAME: str
-    DATABASE_USER: str
-    DATABASE_PASSWORD: str
-    DATABASE_HOST: str
-    DATABASE_PORT: str
+    DATABASE_URL: str
 
     # jwt token expiry time
     ACCESS_TOKEN_EXPIRE_MINUTES: int = 120  # 2 hours

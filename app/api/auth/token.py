@@ -18,12 +18,12 @@ fake_users_db = {
 
 
 @tokenroute.post("/token", response_model=TokenResponse)
-def login(request: LoginRequest, response: Response):
+async def login(request: LoginRequest, response: Response):
     """Authenticate user and return both access and refresh tokens."""
     user = fake_users_db.get(request.username)
 
     if not user or not verify_password(request.password, user["password"]):
-        raise HTTPException(status_code=401, detail="Invalid credentials")
+        raise HTTPException(status_code=403, detail="Invalid credentials")
 
     access_token = create_jwt_token(
         {
