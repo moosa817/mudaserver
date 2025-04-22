@@ -1,28 +1,27 @@
-from fastapi import APIRouter, HTTPException, Response
+from fastapi import APIRouter, Depends, HTTPException, Response
 from app.services.auth.security import (
     create_jwt_token,
     verify_password,
-    hash_password,
     create_refresh_token,
 )
 from app.schemas.auth.input.login import LoginRequest
 from app.schemas.auth.ouput.login import TokenResponse
 from app.core.config import config
+from sqlalchemy.orm import Session
+from app.api.dependencies import get_db
+from app.models.user import User
+
 
 tokenroute = APIRouter()
 
-# Mock user database
-fake_users_db = {
-    "testuser": {"username": "testuser", "password": hash_password("testpassword")}
-}
-
 
 @tokenroute.post("/token", response_model=TokenResponse)
-async def login(request: LoginRequest, response: Response):
+async def login(
+    request: LoginRequest, response: Response, db: Session = Depends(get_db)
+):
     """Authenticate user and return both access and refresh tokens."""
-    user = fake_users_db.get(request.username)
-
-    if not user or not verify_password(request.password, user["password"]):
+    user = db.query(User).filter(User.username == request.username).first()
+    if not user or not verify_password(request.password, user.hashed_password):
         raise HTTPException(status_code=403, detail="Invalid credentials")
 
     access_token = create_jwt_token(
@@ -45,8 +44,8 @@ async def login(request: LoginRequest, response: Response):
         max_age=config.REFRESH_TOKEN_EXPIRE_DAYS * 24 * 60 * 60,
     )
 
-    return {
-        "access_token": access_token,
-        "refresh_token": refresh_token,  # Include refresh token in response
-        "token_type": "bearer",
-    }
+    return TokenResponse(
+        access_token=access_token,
+        refresh_token=refresh_token,
+        token_type="Bearer",
+    )
