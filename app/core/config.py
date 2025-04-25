@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     debug: bool = False
     SECRET_KEY: str
 
+    # LOCATION WHERE FILES ARE SAVED , THIS DIR MUST HAS TWO SUBDIRS , uploads,data
+    DIR_LOCATION: str
+
     # Database
     DATABASE_URL: str
 

@@ -4,7 +4,7 @@ from app.services.auth.security import (
     verify_password,
     create_refresh_token,
 )
-from app.schemas.auth.input.login import LoginRequest
+from fastapi.security import OAuth2PasswordRequestForm
 from app.schemas.auth.ouput.login import TokenResponse
 from app.core.config import config
 from sqlalchemy.orm import Session
@@ -17,7 +17,9 @@ tokenroute = APIRouter()
 
 @tokenroute.post("/token", response_model=TokenResponse)
 async def login(
-    request: LoginRequest, response: Response, db: Session = Depends(get_db)
+    request: OAuth2PasswordRequestForm = Depends(),
+    response: Response = None,
+    db: Session = Depends(get_db),
 ):
     """Authenticate user and return both access and refresh tokens."""
     user = db.query(User).filter(User.username == request.username).first()
@@ -26,13 +28,13 @@ async def login(
 
     access_token = create_jwt_token(
         {
-            "sub": request.username,
+            "sub": f"{user.id}",
             "token_type": "access",
         }
     )
     refresh_token = create_refresh_token(
         {
-            "sub": request.username,
+            "sub": f"{user.id}",
             "token_type": "refresh",
         }
     )
