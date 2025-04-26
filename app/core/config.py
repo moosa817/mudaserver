@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     DATABASE_URL: str
 
     # jwt token expiry time
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 120  # 2 hours
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hours
     REFRESH_TOKEN_EXPIRE_DAYS: int = 60  # 60 days
 
     class Config:

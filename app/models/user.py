@@ -1,4 +1,4 @@
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, BigInteger
 from app.core.database import Base
 
 
@@ -10,3 +10,5 @@ class User(Base):
     username = Column(String, unique=True, index=True, nullable=False)
     hashed_password = Column(String, nullable=False)
     pfp = Column(String, nullable=True)
+    foldername = Column(String, nullable=True)
+    storage_size = Column(BigInteger, default=0)
