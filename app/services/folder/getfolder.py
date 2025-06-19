@@ -1,5 +1,6 @@
 import os
 from app.core.config import config
+from fastapi.responses import JSONResponse
 
 
 def getfolder(root_folder: str, foldername: str):
@@ -20,7 +21,11 @@ def getallfolders(root_folder: str):
     """
     return list of all folders
     """
+
+    if not root_folder:
+        return JSONResponse({"error": "Root folder is not specified"}, status_code=400)
     folder_path = os.path.join(f"{config.DIR_LOCATION}/data", root_folder)
+
     if not os.path.exists(folder_path):
         return {"error": "Folder does not exist"}
 

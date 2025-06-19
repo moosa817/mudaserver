@@ -12,5 +12,7 @@ async def get_all_folders(user: User = Depends(get_current_user)):
     """
     Get all folders.
     """
-    folders = getallfolders(user.foldername)
+
+    print(user.root_foldername)
+    folders = getallfolders(user.root_foldername)
     return folders

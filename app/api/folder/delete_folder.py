@@ -9,20 +9,28 @@ deleteroute = APIRouter()
 
 @deleteroute.delete("/delete_folder")
 async def delete_folder(
-    folder_name: str,
+    folder_path: str,
     user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
     """
     Delete a folder with the given name.
     """
-    rootfolder = user.foldername
-    if not DeleteFolder(rootfolder, folder_name):
+    folder_path = folder_path.lower().strip()
+
+    if not folder_path:
+        raise HTTPException(
+            status_code=400,
+            detail="Folder path cannot be empty.",
+        )
+
+    rootfolder = user.root_foldername
+    if not DeleteFolder(rootfolder, folder_path):
         raise HTTPException(
             status_code=404,
             detail="Folder not found.",
         )
-    user.storage_size -= 4096
+
     db.add(user)
     db.commit()
     return {"message": "Folder deleted successfully."}

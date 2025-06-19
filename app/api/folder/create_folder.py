@@ -4,16 +4,17 @@ from app.api.dependencies import get_current_user, get_db
 from app.models.user import User
 from app.core.config import config
 from app.services.folder.createfolder import create_folder as CreateFolder
-from app.services.folder.createfolder import validFolderName
-import re
+from app.services.folder.validations import validFolderName
 
 
 createroute = APIRouter()
 
 
+# if root path is empty just create a folder in the root directory
 @createroute.post("/create_folder")
 async def create_folder(
     folder_name: str,
+    root_path: str = "root",  # optional, defaults to "root"
     user: dict = Depends(get_current_user),
     db: Session = Depends(get_db),
 ):
@@ -25,15 +26,12 @@ async def create_folder(
             detail="Folder name can only contain letters, numbers, and underscores. and be under 255 characters.",
         )
 
-    if not CreateFolder(
-        user.foldername,
+    CreateFolder(
+        user.root_foldername,
         folder_name,
-    ):
-        raise HTTPException(
-            status_code=409,
-            detail="Folder already exists.",
-        )
-    user.storage_size += 4096
+        root_path,
+    )
+    user.storage_used += 4096
     db.add(user)
     db.commit()
 

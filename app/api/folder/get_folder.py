@@ -7,11 +7,12 @@ getfolderroute = APIRouter()
 
 
 @getfolderroute.get("/get_folder")
-async def get_folder(folder_name: str, user: User = Depends(get_current_user)):
+async def get_folder(folder_path: str, user: User = Depends(get_current_user)):
     """
     Get a folder with the given name.
     """
-    folder = getfolder(user.foldername, folder_name)
+    folder_path = folder_path.lower().strip()
+    folder = getfolder(user.root_foldername, folder_path)
     if "error" in folder:
         raise HTTPException(status_code=404, detail=folder["error"])
     return folder

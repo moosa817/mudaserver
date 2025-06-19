@@ -2,7 +2,7 @@ from fastapi import APIRouter, Depends, HTTPException
 from app.api.dependencies import get_current_user
 from app.models.user import User
 from app.core.config import config
-from app.services.folder.createfolder import validFolderName
+from app.services.folder.validations import validFolderName
 import os
 
 
@@ -11,30 +11,43 @@ renameroute = APIRouter()
 
 @renameroute.put("/rename_folder")
 async def rename_folder(
-    old_name: str, new_name: str, user: User = Depends(get_current_user)
+    old_name: str,
+    new_name: str,
+    root_path: str = "root",  # where the old folder is located
+    user: User = Depends(get_current_user),
 ):
     """
     Rename a folder from old_name to new_name.
     """
+    old_name = old_name.lower()
+    new_name = new_name.lower()
+
     if not validFolderName(new_name):
         raise HTTPException(
             status_code=400,
             detail="Folder name can only contain letters, numbers, and underscores. and be under 255 characters.",
         )
 
+    if root_path == "root":
+        main_folder_path = os.path.join(
+            f"{config.DIR_LOCATION}/data", user.root_foldername
+        )
+    else:
+        main_folder_path = os.path.join(
+            f"{config.DIR_LOCATION}/data", user.root_foldername, root_path
+        )
+
     # Check if the folder exists
-    old_folder_path = os.path.join(
-        f"{config.DIR_LOCATION}/data", user.foldername, old_name
-    )
+    old_folder_path = os.path.join(main_folder_path, old_name)
+
     if not os.path.exists(old_folder_path):
         raise HTTPException(
             status_code=404,
             detail="Folder does not exist.",
         )
+
     # Check if the new folder name already exists
-    new_folder_path = os.path.join(
-        f"{config.DIR_LOCATION}/data", user.foldername, new_name
-    )
+    new_folder_path = os.path.join(main_folder_path, new_name)
     if os.path.exists(new_folder_path):
         raise HTTPException(
             status_code=409,

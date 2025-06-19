@@ -15,6 +15,8 @@ class Settings(BaseSettings):
     # LOCATION WHERE FILES ARE SAVED , THIS DIR MUST HAS TWO SUBDIRS , uploads,data
     DIR_LOCATION: str
 
+    MAX_STORAGE: int = 1 * (1024 * 1024 * 1024)  # 1 GB
+
     # Database
     DATABASE_URL: str
 

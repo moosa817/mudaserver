@@ -1,6 +1,7 @@
 from app.core.config import config
 import os
 import re
+from fastapi.exceptions import HTTPException
 
 
 # create root folder on user registration
@@ -17,34 +18,36 @@ def create_root_folder(username):
     return username
 
 
-def create_folder(root_folder, foldername):
+def create_folder(root_folder, foldername, root_path):
     """
     Create a folder for the user.
+    root_folder: The root folder of the user. (e.g "username")
+    foldername: The name of the folder to be created.
+    root_path: relative path where the folder should be created.
     """
-    # Get the root folder path from the config
-    root_folder_path = os.path.join(f"{config.DIR_LOCATION}/data", root_folder)
-    # Create the folder path
+
+    main_root = os.path.join(f"{config.DIR_LOCATION}/data", root_folder)
+
+    if root_path == "root":
+        root_folder_path = main_root
+    else:
+        root_folder_path = os.path.join(main_root, root_path)
+
     folder_path = os.path.join(root_folder_path, foldername)
 
     if os.path.exists(folder_path):
-        return False
+        raise HTTPException(
+            status_code=400,
+            detail="Folder already exists.",
+        )
 
     try:
         os.makedirs(folder_path)
-    except:
-        return False
+    except Exception as e:
+        print(f"Error creating folder: {e}")
+        raise HTTPException(
+            status_code=500,
+            detail="Failed to create folder.",
+        )
 
     return foldername
-
-
-def validFolderName(foldername):
-    """
-    Check if the folder name is valid.
-    """
-    # Check if the folder name is valid
-    if not re.match(r"^[a-zA-Z0-9_]+$", foldername):
-        return False
-
-    if len(foldername) > 255:
-        return False
-    return True

@@ -48,8 +48,8 @@ async def register(user_input: RegisterInput, db: Session = Depends(get_db)):
             detail="Failed to create root folder for user.",
         )
 
-    new_user.foldername = foldername
-    new_user.storage_size = 0
+    new_user.root_foldername = foldername
+    new_user.storage_used = 0
 
     db.add(new_user)
     db.commit()

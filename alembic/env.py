@@ -5,7 +5,7 @@ import sys
 
 # Adjust this import to fit your project structure
 from app.core.database import Base, DATABASE_URL  # Import Base (and DATABASE_URL)
-from app.models.user import User  # Import the User model (from the correct path)
+import app.models  # Import the User model (from the correct path)
 
 sys.path.append(".")  # Ensures the application is in the module search path
 
