@@ -33,6 +33,12 @@ def create_folder(root_folder, foldername, root_path):
     else:
         root_folder_path = os.path.join(main_root, root_path)
 
+    if not os.path.exists(root_folder_path):
+        raise HTTPException(
+            status_code=400,
+            detail="Root path does not exist.",
+        )
+
     folder_path = os.path.join(root_folder_path, foldername)
 
     if os.path.exists(folder_path):

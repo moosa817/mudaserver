@@ -9,6 +9,8 @@ def UploadMyFile(file: UploadFile, folder_location: str) -> str:
     :param file: The file to be uploaded.
     :return: The path of the uploaded file.
     """
+    file.filename = file.filename.strip().lower()
+
     # Check if the file is empty
     if file.filename == "":
         raise HTTPException(status_code=400, detail="No file selected")
