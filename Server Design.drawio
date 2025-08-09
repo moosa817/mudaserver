@@ -1,9 +1,96 @@
 <mxfile host="app.diagrams.net" agent="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/138.0.0.0 Safari/537.36" version="28.0.7">
   <diagram id="M13jMPx2q17ScvEX745u" name="Page-1">
-    <mxGraphModel dx="872" dy="473" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
+    <mxGraphModel dx="2280" dy="788" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
         <mxCell id="9G7LqNNQSw_pgNskMZaL-0" />
         <mxCell id="9G7LqNNQSw_pgNskMZaL-1" parent="9G7LqNNQSw_pgNskMZaL-0" />
+        <mxCell id="acJbg6AbWErhfWfuN9n0-0" value="Oracle Cloud&lt;br&gt;A.1 Free tier&lt;br&gt;Ubuntu" style="image;sketch=0;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/mscae/VM_Linux.svg;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="-430" y="230" width="76.09" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-1" value="Lenovo t440&lt;br&gt;Arch" style="image;sketch=0;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/mscae/VM_Linux_Non_Azure.svg;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="-420" y="650" width="76.09" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-5" value="Nginx&lt;br&gt;Proxy Manager" style="sketch=0;pointerEvents=1;shadow=0;dashed=0;html=1;strokeColor=none;fillColor=#505050;labelPosition=center;verticalLabelPosition=bottom;verticalAlign=top;outlineConnect=0;align=center;shape=mxgraph.office.servers.reverse_proxy;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="140" y="80" width="60" height="80" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-8" value="&lt;div&gt;server.moosa.online&lt;/div&gt;" style="rounded=0;whiteSpace=wrap;html=1;fontStyle=1" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="390" y="10" width="130" height="60" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-11" value="LIMITED ACESS LIST" style="endArrow=classic;startArrow=classic;html=1;rounded=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-5" target="acJbg6AbWErhfWfuN9n0-8">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-50" y="205.58823529411768" as="sourcePoint" />
+            <mxPoint x="20" y="180" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="230" y="120" />
+              <mxPoint x="230" y="40" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-17" value="Private Server IP :9090" style="endArrow=classic;startArrow=classic;html=1;rounded=0;entryX=0;entryY=0.125;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-24" target="acJbg6AbWErhfWfuN9n0-5">
+          <mxGeometry x="0.4484" width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="20" y="270" as="sourcePoint" />
+            <mxPoint x="-90" y="230" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-80" y="90" />
+            </Array>
+            <mxPoint x="-1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-21" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.031;exitY=0.41;exitDx=0;exitDy=0;exitPerimeter=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-470" y="560" as="sourcePoint" />
+            <mxPoint x="-420" y="250" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-470" y="679" />
+              <mxPoint x="-470" y="530" />
+              <mxPoint x="-470" y="250" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-39" value="TAILSCALE&lt;br&gt;VPN" style="edgeLabel;html=1;align=center;verticalAlign=middle;resizable=0;points=[];" vertex="1" connectable="0" parent="acJbg6AbWErhfWfuN9n0-21">
+          <mxGeometry x="0.177" y="3" relative="1" as="geometry">
+            <mxPoint y="1" as="offset" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-22" value="Ngnix Reverse&lt;br&gt;Proxy port 81,80" style="image;sketch=0;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/mscae/Docker.svg;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="-440" y="70" width="50" height="41" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-23" value="" style="endArrow=classic;html=1;rounded=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-22">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-240" y="140" as="sourcePoint" />
+            <mxPoint x="-415" y="220" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-24" value="DENY ALL DEFAULT&lt;br&gt;ALLOW 80 FROM ANYWHERE (managed by ngnix)&lt;br&gt;&lt;div&gt;ALLOW 9090 FROM DOCKER ONLY (only ngnix docker can access this)&lt;/div&gt;&lt;div&gt;ALLOW 1433 sql server from personal ips&lt;/div&gt;" style="image;html=1;image=img/lib/clip_art/networking/Firewall_02_128x128.png" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="-140" y="220" width="130" height="70" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-33" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0.958;exitY=0.461;exitDx=0;exitDy=0;exitPerimeter=0;entryX=-0.032;entryY=0.645;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-0" target="acJbg6AbWErhfWfuN9n0-24">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-270" y="230" as="sourcePoint" />
+            <mxPoint x="-220" y="180" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-34" value="" style="endArrow=classic;startArrow=classic;html=1;rounded=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1" source="acJbg6AbWErhfWfuN9n0-35">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-70" y="480" as="sourcePoint" />
+            <mxPoint x="-70" y="340" as="targetPoint" />
+            <Array as="points">
+              <mxPoint x="-70" y="440" />
+            </Array>
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-35" value="sql-server.moosa.online:1433" style="rounded=0;whiteSpace=wrap;html=1;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="350" y="410" width="170" height="50" as="geometry" />
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-37" value="FORWARDING&amp;nbsp;&lt;br&gt;SQL SERVER&lt;div&gt;(rinetd)&lt;/div&gt;" style="endArrow=classic;html=1;rounded=0;exitX=0.11;exitY=0.076;exitDx=0;exitDy=0;exitPerimeter=0;entryX=0.197;entryY=0.957;entryDx=0;entryDy=0;entryPerimeter=0;" edge="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry width="50" height="50" relative="1" as="geometry">
+            <mxPoint x="-410.63009999999986" y="655.3199999999999" as="sourcePoint" />
+            <mxPoint x="-414.01026999999976" y="296.99" as="targetPoint" />
+          </mxGeometry>
+        </mxCell>
+        <mxCell id="acJbg6AbWErhfWfuN9n0-38" value="CLOUDFLARE&lt;br&gt;ALL MAPPING&amp;nbsp;&lt;br&gt;TO PUBLIC IP&amp;nbsp;&lt;br&gt;BASICALLY" style="image;aspect=fixed;html=1;points=[];align=center;fontSize=12;image=img/lib/azure2/networking/DNS_Zones.svg;" vertex="1" parent="9G7LqNNQSw_pgNskMZaL-1">
+          <mxGeometry x="630" y="190" width="64" height="64" as="geometry" />
+        </mxCell>
       </root>
     </mxGraphModel>
   </diagram>
