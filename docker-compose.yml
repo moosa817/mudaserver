@@ -1,0 +1,11 @@
+services:
+  api:
+    build: .
+    container_name: muda_api
+    env_file:
+      - .env
+    ports:
+      - "8000:8000"
+    volumes:
+      - ${HOME}/mudata:/app/mudata
+    restart: unless-stopped

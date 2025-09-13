@@ -15,7 +15,7 @@ class EditFile(BaseModel):
 edit_router = APIRouter()
 
 
-@edit_router.post("/edit-file", request_model=EditFile, tags=["file"])
+@edit_router.post("/edit-file", response_model=EditFile, tags=["file"])
 async def edit_file(
     request: EditFile, user: User = Depends(get_current_user)
 ):  # edits text based file
@@ -46,4 +46,5 @@ async def edit_file(
             status_code=500,
             detail=f"Failed to edit file: {str(e)}",
         )
+
     return {"message": "File edited successfully", "file_path": file_path}
