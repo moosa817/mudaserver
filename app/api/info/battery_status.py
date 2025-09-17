@@ -10,5 +10,9 @@ batterystatusroute = APIRouter()
     "/battery-status", response_model=get_schema(config.custom_battery)
 )
 def get_battery_status():
-    BatteryInfo = get_battery(config.custom_battery)
+    try:
+        BatteryInfo = get_battery(config.custom_battery)
+    except Exception as e:
+        return {"error": str(e)}
+
     return BatteryInfo
