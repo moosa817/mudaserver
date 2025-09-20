@@ -1,3 +1,4 @@
+import time
 import psutil
 from app.schemas.info.output.system_info import SystemInfoResponse
 from cpuinfo import get_cpu_info
@@ -11,6 +12,10 @@ def get_system_info() -> dict:
     cpu_name = cpu_info["brand_raw"]
     cpu_cores = psutil.cpu_count(logical=False)
 
+    # Calculate uptime in seconds
+    boot_time = psutil.boot_time()
+    uptime_seconds = int(time.time() - boot_time)
+
     return SystemInfoResponse(
         cpu_name=cpu_name,
         cpu_cores=cpu_cores,
@@ -22,4 +27,5 @@ def get_system_info() -> dict:
         disk_total=round((disk.total / (1024**3)), 2),
         disk_used=round((disk.used / (1024**3)), 2),
         no_of_process=len(psutil.pids()),
+        uptime_seconds=uptime_seconds,  # raw seconds
     )

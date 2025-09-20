@@ -13,3 +13,4 @@ class SystemInfoResponse(BaseModel):
     disk_used: float
     disk_free: float
     no_of_process: int
+    uptime_seconds: int  # raw seconds
