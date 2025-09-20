@@ -4,9 +4,13 @@ from app.core.config import config
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from fastapi.encoders import jsonable_encoder
+from fastapi.middleware.cors import CORSMiddleware
 
 
 def create_app():
+
+    cors_origins = ["http://localhost:3000", "https://myfrontend.com", "*"]
+
     app = FastAPI(
         title=config.app_name,
         description=config.description,
@@ -14,6 +18,15 @@ def create_app():
         docs_url=None if not config.debug else "/docs",
         redoc_url=None if not config.debug else "/redoc",
     )
+
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=cors_origins,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
+
     app.include_router(api_router, prefix="/api")
 
     @app.exception_handler(RequestValidationError)
