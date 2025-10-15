@@ -2,3 +2,5 @@
 __pycache__
 alembic/versions
 tests
+.env.dev
+.*

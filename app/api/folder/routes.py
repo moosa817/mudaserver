@@ -4,6 +4,7 @@ from app.api.folder.rename_folder import renameroute
 from app.api.folder.delete_folder import deleteroute
 from app.api.folder.get_folder import getfolderroute
 from app.api.folder.get_all_folders import getallfoldersroute
+from app.api.folder.upload_folder import uploadroute
 
 folderrouter = APIRouter()
 
@@ -12,3 +13,4 @@ folderrouter.include_router(renameroute)
 folderrouter.include_router(deleteroute)
 folderrouter.include_router(getfolderroute)
 folderrouter.include_router(getallfoldersroute)
+folderrouter.include_router(uploadroute)

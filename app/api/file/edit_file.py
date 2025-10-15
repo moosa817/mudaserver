@@ -12,16 +12,21 @@ class EditFile(BaseModel):
     content: str
 
 
+class EditFileResponse(BaseModel):
+    message: str
+
+
 edit_router = APIRouter()
 
 
-@edit_router.post("/edit-file", response_model=EditFile, tags=["file"])
+@edit_router.post("/edit-file", response_model=EditFileResponse)
 async def edit_file(
     request: EditFile, user: User = Depends(get_current_user)
 ):  # edits text based file
     """
     Edit a text-based file.
     """
+
     # check if path exists and if it is of a text-based file
     if not request.file_path.endswith((".txt", ".md", ".json", ".csv")):
         raise HTTPException(
@@ -30,7 +35,9 @@ async def edit_file(
         )
     file_path = request.file_path
     content = request.content
-    full_path = os.path.join(f"{config.DIR_LOCATION}/data", user.username, file_path)
+    full_path = os.path.join(
+        f"{config.DIR_LOCATION}/data", user.root_foldername, file_path
+    )
 
     if not os.path.exists(full_path):
         raise HTTPException(
@@ -47,4 +54,4 @@ async def edit_file(
             detail=f"Failed to edit file: {str(e)}",
         )
 
-    return {"message": "File edited successfully", "file_path": file_path}
+    return {"message": "File edited successfully"}

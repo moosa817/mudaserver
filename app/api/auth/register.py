@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, HTTPException
-from app.api.dependencies import get_db
+from app.api.dependencies import get_db, verify_basic_auth
 from app.models.user import User
 from app.schemas.auth.input.register import RegisterInput
 from app.services.folder.createfolder import create_root_folder
@@ -16,7 +16,11 @@ registerroute = APIRouter()
 
 
 @registerroute.post("/register", response_model=RegisterResponse)
-async def register(user_input: RegisterInput, db: Session = Depends(get_db)):
+async def register(
+    user_input: RegisterInput,
+    db: Session = Depends(get_db),
+    _: str = Depends(verify_basic_auth),
+):
 
     # 🔹 Check if username exists
     if db.query(User).filter(User.username == user_input.username).first():
