@@ -61,13 +61,13 @@ async def register(
 
     access_token = create_jwt_token(
         {
-            "sub": new_user.username,
+            "sub": str(new_user.id),
             "token_type": "access",
         }
     )
     refresh_token = create_refresh_token(
         {
-            "sub": new_user.username,
+            "sub": str(new_user.id),
             "token_type": "refresh",
         }
     )
