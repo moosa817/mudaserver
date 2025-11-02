@@ -2,9 +2,11 @@ from fastapi import APIRouter, UploadFile, File, Form, Depends, HTTPException
 from sqlalchemy.orm import Session
 import os
 import aiofiles
+import uuid  # ✅ Add this
 from app.core.config import config
 from app.api.dependencies import get_current_user, get_db
 from app.models.user import User
+from app.services.upload.progress_tracker import progress_tracker  # ✅ Add this
 
 uploadroute = APIRouter()
 
@@ -21,7 +23,10 @@ async def upload_folder(
     Streams each file to disk in chunks to avoid memory overload.
     """
 
-    # Adjust root folder logic
+    # ✅ Generate upload ID for progress tracking
+    upload_id = str(uuid.uuid4())
+    total_files = len(files)
+
     if root_path == "root":
         root_path = ""
 
@@ -32,10 +37,15 @@ async def upload_folder(
 
     uploaded_size = 0
 
-    for file in files:
-        relative_path = file.filename  # includes subfolders (webkitRelativePath)
+    for idx, file in enumerate(files):
+        relative_path = file.filename
         save_path = os.path.join(base_dir, relative_path)
         os.makedirs(os.path.dirname(save_path), exist_ok=True)
+
+        # ✅ Update progress before processing each file
+        progress_tracker.set_progress(
+            upload_id=upload_id, current=idx, total=total_files, filename=file.filename
+        )
 
         # Stream write to disk
         async with aiofiles.open(save_path, "wb") as buffer:
@@ -48,9 +58,35 @@ async def upload_folder(
     db.add(user)
     db.commit()
 
+    # ✅ Remove progress when complete
+    progress_tracker.remove_progress(upload_id)
+
     return {
         "message": "Folder uploaded successfully.",
+        "upload_id": upload_id,  # ✅ Return upload ID
         "root_path": root_path,
         "files_uploaded": len(files),
         "size_uploaded": uploaded_size,
+    }
+
+
+# ✅ Add endpoint to check folder upload progress
+@uploadroute.get("/upload-folder-progress/{upload_id}")
+async def get_folder_upload_progress(
+    upload_id: str, user: User = Depends(get_current_user)
+):
+    """
+    Get the current progress of a folder upload.
+    """
+    progress = progress_tracker.get_progress(upload_id)
+
+    if not progress:
+        raise HTTPException(status_code=404, detail="Upload not found")
+
+    return {
+        "upload_id": upload_id,
+        "current_file": progress.get("current", 0),
+        "total_files": progress.get("total", 0),
+        "percentage": round(progress.get("percentage", 0), 2),
+        "current_filename": progress.get("filename", ""),
     }

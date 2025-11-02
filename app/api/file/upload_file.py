@@ -3,6 +3,7 @@ from fastapi.responses import JSONResponse
 from app.api.dependencies import get_current_user
 from app.models.user import User
 from app.core.config import config
+from app.services.upload.progress_tracker import progress_tracker  # ✅ Add this
 import os
 import aiofiles
 
@@ -35,6 +36,14 @@ async def upload_chunk(
                 break
             await f.write(chunk)
 
+    # ✅ Update progress after each chunk
+    progress_tracker.set_progress(
+        upload_id=file_id,
+        current=chunk_index + 1,
+        total=total_chunks,
+        filename=file.filename,
+    )
+
     # merge if all chunks uploaded
     uploaded_parts = len([p for p in os.listdir(temp_dir) if p.startswith("part_")])
     if uploaded_parts == total_chunks:
@@ -44,10 +53,14 @@ async def upload_chunk(
                 part_path = os.path.join(temp_dir, f"part_{i}")
                 with open(part_path, "rb") as infile:
                     outfile.write(infile.read())
+
         # clean up parts
         for p in os.listdir(temp_dir):
             os.remove(os.path.join(temp_dir, p))
         os.rmdir(temp_dir)
+
+        # ✅ Remove progress when complete
+        progress_tracker.remove_progress(file_id)
 
         return JSONResponse(
             content={
@@ -63,3 +76,23 @@ async def upload_chunk(
             "message": f"Chunk {chunk_index + 1}/{total_chunks} uploaded",
         }
     )
+
+
+# ✅ Add endpoint to check upload progress
+@upload_router.get("/upload-progress/{file_id}")
+async def get_upload_progress(file_id: str, user: User = Depends(get_current_user)):
+    """
+    Get the current progress of a file upload.
+    """
+    progress = progress_tracker.get_progress(file_id)
+
+    if not progress:
+        raise HTTPException(status_code=404, detail="Upload not found")
+
+    return {
+        "file_id": file_id,
+        "current_chunk": progress.get("current", 0),
+        "total_chunks": progress.get("total", 0),
+        "percentage": round(progress.get("percentage", 0), 2),
+        "filename": progress.get("filename", ""),
+    }

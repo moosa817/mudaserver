@@ -4,12 +4,13 @@ from app.api.file.rename_file import rename_router
 from app.api.file.delete_file import delete_file_router
 from app.api.file.edit_file import edit_router
 from app.api.file.view_file import view_router
-
+from app.api.file.download_file import download_file_router
 
 filerouter = APIRouter()
 
 filerouter.include_router(upload_router)
 filerouter.include_router(view_router)
+filerouter.include_router(download_file_router)
 filerouter.include_router(rename_router)
 filerouter.include_router(delete_file_router)
 filerouter.include_router(edit_router)
