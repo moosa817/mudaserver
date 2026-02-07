@@ -3,7 +3,7 @@ from app.api.dependencies import get_current_user
 from app.models.user import User
 from app.core.config import config
 import os
-from datetime import datetime
+from datetime import datetime, timezone
 
 getfolderroute = APIRouter()
 
@@ -53,7 +53,7 @@ async def get_folder(folder_path: str = "", user: User = Depends(get_current_use
             if is_file:
                 stat = entry.stat(follow_symlinks=False)
                 item_data["size"] = stat.st_size  # File size in bytes
-                item_data["modified"] = datetime.fromtimestamp(stat.st_mtime).isoformat()
+                item_data["modified"] = datetime.fromtimestamp(stat.st_mtime, tz=timezone.utc).isoformat()
             
             items.append(item_data)
     
