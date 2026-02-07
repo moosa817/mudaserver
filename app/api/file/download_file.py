@@ -25,6 +25,8 @@ async def download_file(path: str, user: User = Depends(get_current_user)):
     file_path = os.path.join(base_path, path)
 
     # Security check: ensure file is within user's directory
+    file_path = os.path.normpath(file_path)
+    base_path = os.path.normpath(base_path)
     if not file_path.startswith(base_path):
         raise HTTPException(status_code=403, detail="Access denied")
 

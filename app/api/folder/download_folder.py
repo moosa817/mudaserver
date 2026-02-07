@@ -64,6 +64,8 @@ async def download_folder(
     folder_path = os.path.join(base_path, path) if path else base_path
 
     # Security check: ensure folder is within user's directory
+    folder_path = os.path.normpath(folder_path)
+    base_path = os.path.normpath(base_path)
     if not folder_path.startswith(base_path):
         raise HTTPException(status_code=403, detail="Access denied")
 
