@@ -15,7 +15,7 @@ async def download_file(path: str, user: User = Depends(get_current_user)):
     Download a specific file from the server.
     Returns the file with proper headers to trigger browser download.
     """
-    path = path.strip().lower()
+    path = path.strip()  # Only strip whitespace, preserve case
 
     if not path:
         raise HTTPException(status_code=400, detail="File path is required")
@@ -25,7 +25,9 @@ async def download_file(path: str, user: User = Depends(get_current_user)):
     file_path = os.path.join(base_path, path)
 
     # Security check: ensure file is within user's directory
-    if not file_path.startswith(base_path):
+    file_path = os.path.realpath(file_path)
+    base_path = os.path.realpath(base_path)
+    if not file_path.startswith(base_path + os.sep) and file_path != base_path:
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Check if file exists

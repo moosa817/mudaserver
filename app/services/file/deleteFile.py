@@ -10,10 +10,15 @@ def DeleteFile(file_path: str, user: User):
     :param file_path: The path of the file to delete.
     :param user: The user requesting the deletion.
     """
-
-    path_to_delete = os.path.join(
-        f"{config.DIR_LOCATION}/data", user.root_foldername, file_path
-    )
+    base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+    path_to_delete = os.path.join(base_path, file_path)
+    
+    # Security check: ensure file is within user's directory
+    path_to_delete = os.path.realpath(path_to_delete)
+    base_path = os.path.realpath(base_path)
+    if not path_to_delete.startswith(base_path + os.sep) and path_to_delete != base_path:
+        raise HTTPException(status_code=403, detail="Access denied")
+    
     if not os.path.exists(path_to_delete):
         raise FileNotFoundError(f"File not found: {file_path}")
 
