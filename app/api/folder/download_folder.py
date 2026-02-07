@@ -66,7 +66,11 @@ async def download_folder(
     # Security check: ensure folder is within user's directory
     folder_path = os.path.realpath(folder_path)
     base_path = os.path.realpath(base_path)
-    if not folder_path.startswith(base_path + os.sep) and folder_path != base_path:
+    try:
+        if os.path.commonpath([folder_path, base_path]) != base_path:
+            raise HTTPException(status_code=403, detail="Access denied")
+    except ValueError:
+        # Different drives on Windows or other path issues
         raise HTTPException(status_code=403, detail="Access denied")
 
     # Check if folder exists

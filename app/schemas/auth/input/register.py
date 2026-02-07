@@ -1,4 +1,4 @@
-from pydantic import BaseModel, EmailStr, Field, field_validator
+from pydantic import BaseModel, EmailStr, Field, field_validator, ValidationInfo
 
 
 class RegisterInput(BaseModel):
@@ -22,7 +22,8 @@ class RegisterInput(BaseModel):
 
     @field_validator("confirm_password")
     @classmethod
-    def passwords_match(cls, confirm_password, values):
-        if confirm_password != values.data["password"]:
+    def passwords_match(cls, confirm_password: str, info: ValidationInfo):
+        password = info.data.get("password")
+        if confirm_password != password:
             raise ValueError("Passwords do not match")
         return confirm_password

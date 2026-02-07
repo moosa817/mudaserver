@@ -5,7 +5,9 @@ from app.api.dependencies import get_current_user
 from app.models.user import User
 from pydantic import BaseModel, Field
 from app.services.auth.security import verify_password
+import logging
 
+logger = logging.getLogger(__name__)
 deleteroute = APIRouter()
 
 
@@ -20,13 +22,22 @@ async def delete_user(
     db: Session = Depends(get_db),
 ):
     """Delete user account."""
+    try:
+        # Verify the password
+        if not verify_password(request.password, user.hashed_password):
+            raise HTTPException(status_code=403, detail="Invalid password")
 
-    # Verify the password
-    if not verify_password(request.password, user.hashed_password):
-        raise HTTPException(status_code=403, detail="Invalid password")
+        # Delete the user
+        db.delete(user)
+        db.commit()
 
-    # Delete the user
-    db.delete(user)
-    db.commit()
-
-    return {"message": "User deleted successfully"}
+        return {"message": "User deleted successfully"}
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error during user deletion: {e}", exc_info=True)
+        db.rollback()
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred during user deletion. Please try again.",
+        )

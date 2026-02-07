@@ -25,7 +25,11 @@ async def get_folder(folder_path: str = "", user: User = Depends(get_current_use
     # Security check: ensure path is within user's directory
     full_path = os.path.realpath(full_path)
     base_path = os.path.realpath(base_path)
-    if not full_path.startswith(base_path + os.sep) and full_path != base_path:
+    try:
+        if os.path.commonpath([full_path, base_path]) != base_path:
+            raise HTTPException(status_code=403, detail="Access denied")
+    except ValueError:
+        # Different drives on Windows or other path issues
         raise HTTPException(status_code=403, detail="Access denied")
     
     if not os.path.exists(full_path):
