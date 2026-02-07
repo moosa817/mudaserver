@@ -53,7 +53,7 @@ async def download_folder(
     The folder will be compressed on-the-fly and sent to the client.
     The temporary zip file is automatically cleaned up after download.
     """
-    path = path.strip().lower()
+    path = path.strip()  # Only strip whitespace, preserve case
 
     # Handle root folder
     if not path or path == "root":

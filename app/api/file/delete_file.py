@@ -12,7 +12,7 @@ async def delete_file(file_path: str, user: User = Depends(get_current_user)):
     Delete a file at the specified path.
     :param file_path: The path of the file to delete.
     """
-    file_path = file_path.strip().lower()
+    file_path = file_path.strip()  # Only strip whitespace, preserve case
 
     if not file_path:
         raise HTTPException(status_code=400, detail="Invalid file path")
