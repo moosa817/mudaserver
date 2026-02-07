@@ -8,18 +8,29 @@ from app.services.auth.security import (
 )
 from app.schemas.auth.input.refresh import RefreshTokenRequest
 from app.schemas.auth.ouput.refresh import RefreshTokenResponse
+import logging
 
+logger = logging.getLogger(__name__)
 refreshroute = APIRouter()
 
 
 @refreshroute.post("/refresh", response_model=RefreshTokenResponse)
 async def refresh(request: RefreshTokenRequest):
     """Refresh access token using refresh token."""
-    payload = decode_jwt_token(request.refresh_token)
-    if payload:
-        if payload["token_type"] != "refresh":
+    try:
+        payload = decode_jwt_token(request.refresh_token)
+        if payload:
+            if payload["token_type"] != "refresh":
+                raise HTTPException(status_code=403, detail="Invalid refresh token")
+            access_token = create_jwt_token({"sub": payload["sub"], "token_type": "access"})
+            return RefreshTokenResponse(access_token=access_token, token_type="bearer")
+        else:
             raise HTTPException(status_code=403, detail="Invalid refresh token")
-        access_token = create_jwt_token({"sub": payload["sub"], "token_type": "access"})
-        return RefreshTokenResponse(access_token=access_token, token_type="bearer")
-    else:
-        raise HTTPException(status_code=403, detail="Invalid refresh token")
+    except HTTPException:
+        raise
+    except Exception as e:
+        logger.error(f"Error during token refresh: {e}", exc_info=True)
+        raise HTTPException(
+            status_code=500,
+            detail="An error occurred during token refresh. Please try again.",
+        )
