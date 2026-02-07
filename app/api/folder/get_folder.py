@@ -23,9 +23,9 @@ async def get_folder(folder_path: str = "", user: User = Depends(get_current_use
     full_path = os.path.join(base_path, folder_path) if folder_path else base_path
     
     # Security check: ensure path is within user's directory
-    full_path = os.path.normpath(full_path)
-    base_path = os.path.normpath(base_path)
-    if not full_path.startswith(base_path):
+    full_path = os.path.realpath(full_path)
+    base_path = os.path.realpath(base_path)
+    if not full_path.startswith(base_path + os.sep) and full_path != base_path:
         raise HTTPException(status_code=403, detail="Access denied")
     
     if not os.path.exists(full_path):
@@ -38,6 +38,10 @@ async def get_folder(folder_path: str = "", user: User = Depends(get_current_use
     # Use os.scandir() for better performance
     with os.scandir(full_path) as entries:
         for entry in entries:
+            # Skip symbolic links for security
+            if entry.is_symlink():
+                continue
+                
             is_file = entry.is_file(follow_symlinks=False)
             
             item_data = {
