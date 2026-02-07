@@ -25,7 +25,11 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         # Security check: ensure file is within user's directory
         file_path = os.path.realpath(file_path)
         base_path = os.path.realpath(base_path)
-        if not file_path.startswith(base_path + os.sep) and file_path != base_path:
+        try:
+            if os.path.commonpath([file_path, base_path]) != base_path:
+                raise HTTPException(status_code=403, detail="Access denied")
+        except ValueError:
+            # Different drives on Windows or other path issues
             raise HTTPException(status_code=403, detail="Access denied")
 
         if not os.path.exists(file_path):

@@ -16,7 +16,11 @@ def DeleteFile(file_path: str, user: User):
     # Security check: ensure file is within user's directory
     path_to_delete = os.path.realpath(path_to_delete)
     base_path = os.path.realpath(base_path)
-    if not path_to_delete.startswith(base_path + os.sep) and path_to_delete != base_path:
+    try:
+        if os.path.commonpath([path_to_delete, base_path]) != base_path:
+            raise HTTPException(status_code=403, detail="Access denied")
+    except ValueError:
+        # Different drives on Windows or other path issues
         raise HTTPException(status_code=403, detail="Access denied")
     
     if not os.path.exists(path_to_delete):

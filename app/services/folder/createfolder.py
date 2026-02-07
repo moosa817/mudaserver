@@ -46,7 +46,14 @@ def create_folder(root_folder, foldername, root_path):
         # Security check: ensure path is within user's directory
         root_folder_path = os.path.realpath(root_folder_path)
         main_root = os.path.realpath(main_root)
-        if not root_folder_path.startswith(main_root + os.sep) and root_folder_path != main_root:
+        try:
+            if os.path.commonpath([root_folder_path, main_root]) != main_root:
+                raise HTTPException(
+                    status_code=403,
+                    detail="Access denied.",
+                )
+        except ValueError:
+            # Different drives on Windows or other path issues
             raise HTTPException(
                 status_code=403,
                 detail="Access denied.",
