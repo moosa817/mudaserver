@@ -95,6 +95,7 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         encoded_filename = quote(filename, safe='')
 
         # Use both filename (ASCII fallback) and filename* (UTF-8 encoded) for maximum compatibility
+        # RFC 5987 format: filename*=UTF-8'<language>'{encoded_name} (language tag is optional/empty here)
         content_disposition = f'inline; filename="{ascii_filename}"; filename*=UTF-8\'\'{encoded_filename}'
 
         # Return file with inline disposition header for browser viewing
