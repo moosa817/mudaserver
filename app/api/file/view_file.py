@@ -1,14 +1,38 @@
-from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException
-from fastapi.responses import JSONResponse, FileResponse
+from fastapi import APIRouter, Depends, HTTPException
+from fastapi.responses import FileResponse
 from app.api.dependencies import get_current_user
 from app.models.user import User
 from app.core.config import config
 import os
-import aiofiles
 import logging
 
 logger = logging.getLogger(__name__)
 view_router = APIRouter()
+
+# Dictionary mapping file extensions to proper MIME types for viewable files
+VIEWABLE_TYPES = {
+    # Images
+    ".png": "image/png",
+    ".jpg": "image/jpeg",
+    ".jpeg": "image/jpeg",
+    ".gif": "image/gif",
+    ".webp": "image/webp",
+    ".svg": "image/svg+xml",
+    # Documents
+    ".pdf": "application/pdf",
+    # Text
+    ".txt": "text/plain",
+    ".json": "application/json",
+    ".md": "text/markdown",
+    # Video
+    ".mp4": "video/mp4",
+    ".webm": "video/webm",
+    ".mov": "video/quicktime",
+    # Audio
+    ".mp3": "audio/mpeg",
+    ".wav": "audio/wav",
+    ".ogg": "audio/ogg",
+}
 
 
 @view_router.get("/view/{path:path}")
@@ -40,20 +64,22 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
 
         ext = os.path.splitext(file_path)[1].lower()
 
-        # Stream video/audio files
-        if ext in [".mp4", ".mp3", ".wav", ".ogg", ".webm"]:
-            from fastapi.responses import StreamingResponse
-
-            def iterfile():
-                with open(file_path, "rb") as f:
-                    yield from f
-
-            return StreamingResponse(
-                iterfile(), media_type=f"video/mp4" if ext == ".mp4" else f"audio/{ext[1:]}"
+        # Validate that file type is viewable
+        if ext not in VIEWABLE_TYPES:
+            raise HTTPException(
+                status_code=400,
+                detail=f"File type '{ext}' is not supported for inline viewing. Supported types: {', '.join(VIEWABLE_TYPES.keys())}"
             )
 
-        # Direct display for images, pdf, etc.
-        return FileResponse(file_path)
+        # Get the proper media type for the file
+        media_type = VIEWABLE_TYPES[ext]
+
+        # Return file with inline disposition header for browser viewing
+        return FileResponse(
+            path=file_path,
+            media_type=media_type,
+            headers={"Content-Disposition": "inline"}
+        )
     except HTTPException:
         raise
     except Exception as e:
