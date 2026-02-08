@@ -10,6 +10,9 @@ from urllib.parse import quote
 logger = logging.getLogger(__name__)
 view_router = APIRouter()
 
+# Maximum file size for inline viewing (30MB)
+MAX_VIEW_SIZE = 30 * 1024 * 1024  # 30MB in bytes
+
 # Dictionary mapping file extensions to proper MIME types for viewable files
 VIEWABLE_TYPES = {
     # Images
@@ -64,7 +67,6 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
             raise HTTPException(status_code=400, detail="Path is not a file")
 
         # Check file size (30MB limit for inline viewing)
-        MAX_VIEW_SIZE = 30 * 1024 * 1024  # 30MB in bytes
         file_size = os.path.getsize(file_path)
 
         if file_size > MAX_VIEW_SIZE:
