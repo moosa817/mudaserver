@@ -74,16 +74,16 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
 
         # Get the proper media type for the file
         media_type = VIEWABLE_TYPES[ext]
-        
+
         # Get filename for Content-Disposition header
         filename = os.path.basename(file_path)
-        
+
         # Sanitize and encode filename for Content-Disposition header
         # Use ASCII fallback for filename and RFC 5987 encoding for filename*
         # This ensures proper handling of Unicode characters across all browsers
-        ascii_filename = filename.encode('ascii', 'ignore').decode('ascii') or 'file'
+        ascii_filename = filename.encode('ascii', 'ignore').decode('ascii') or f'file{ext}'
         encoded_filename = quote(filename, safe='')
-        
+
         # Use both filename (ASCII fallback) and filename* (UTF-8 encoded) for maximum compatibility
         content_disposition = f'inline; filename="{ascii_filename}"; filename*=UTF-8\'\'{encoded_filename}'
 
