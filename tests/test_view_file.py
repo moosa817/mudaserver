@@ -39,6 +39,12 @@ def test_dir(tmp_path, mock_config):
     return tmp_path, data_dir
 
 
+def run_async(coro):
+    """Helper to run async functions in tests"""
+    import asyncio
+    return asyncio.run(coro)
+
+
 def test_file_too_large(test_dir, mock_user):
     """Test that files over 30MB return appropriate error"""
     from app.api.file.view_file import view_file, MAX_VIEW_SIZE
@@ -53,8 +59,7 @@ def test_file_too_large(test_dir, mock_user):
         f.write(b'0' * (MAX_VIEW_SIZE + 1024 * 1024))  # 1MB over limit
     
     with pytest.raises(HTTPException) as exc_info:
-        import asyncio
-        asyncio.run(view_file("large_video.mp4", mock_user))
+        run_async(view_file("large_video.mp4", mock_user))
     
     # Check status code
     assert exc_info.value.status_code == 413
@@ -82,8 +87,7 @@ def test_unsupported_file_type(test_dir, mock_user):
         f.write(b'MZ')  # DOS header signature
     
     with pytest.raises(HTTPException) as exc_info:
-        import asyncio
-        asyncio.run(view_file("installer.exe", mock_user))
+        run_async(view_file("installer.exe", mock_user))
     
     # Check status code
     assert exc_info.value.status_code == 415
@@ -108,8 +112,7 @@ def test_viewable_file_small_size(test_dir, mock_user):
     with open(text_file, 'w') as f:
         f.write("Hello, World!")
     
-    import asyncio
-    response = asyncio.run(view_file("test.txt", mock_user))
+    response = run_async(view_file("test.txt", mock_user))
     
     # Check that we got a FileResponse (not an exception)
     assert response is not None
@@ -128,8 +131,7 @@ def test_download_url_format(test_dir, mock_user):
         f.write(b'test')
     
     with pytest.raises(HTTPException) as exc_info:
-        import asyncio
-        asyncio.run(view_file("test file with spaces.exe", mock_user))
+        run_async(view_file("test file with spaces.exe", mock_user))
     
     # Check that download URL is properly encoded
     detail = exc_info.value.detail
@@ -149,9 +151,8 @@ def test_file_size_exactly_at_limit(test_dir, mock_user):
     with open(limit_file, 'wb') as f:
         f.write(b'0' * MAX_VIEW_SIZE)
     
-    import asyncio
     # Should not raise an exception
-    response = asyncio.run(view_file("exactly_at_limit.mp4", mock_user))
+    response = run_async(view_file("exactly_at_limit.mp4", mock_user))
     assert response is not None
 
 
@@ -168,8 +169,7 @@ def test_file_size_just_over_limit(test_dir, mock_user):
         f.write(b'0' * (MAX_VIEW_SIZE + 1))
     
     with pytest.raises(HTTPException) as exc_info:
-        import asyncio
-        asyncio.run(view_file("just_over.mp4", mock_user))
+        run_async(view_file("just_over.mp4", mock_user))
     
     # Check status code
     assert exc_info.value.status_code == 413
