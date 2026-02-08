@@ -5,6 +5,7 @@ from app.models.user import User
 from app.core.config import config
 import os
 import logging
+from urllib.parse import quote
 
 logger = logging.getLogger(__name__)
 view_router = APIRouter()
@@ -74,17 +75,23 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         # Get the proper media type for the file
         media_type = VIEWABLE_TYPES[ext]
         
-        # Get filename for Content-Disposition header and sanitize it
+        # Get filename for Content-Disposition header
         filename = os.path.basename(file_path)
-        # Sanitize filename by removing/escaping characters that could break HTTP headers
-        # Replace quotes and backslashes with underscores to prevent header injection
-        safe_filename = filename.replace('"', '_').replace('\\', '_').replace('\n', '_').replace('\r', '_')
+        
+        # Sanitize and encode filename for Content-Disposition header
+        # Use ASCII fallback for filename and RFC 5987 encoding for filename*
+        # This ensures proper handling of Unicode characters across all browsers
+        ascii_filename = filename.encode('ascii', 'ignore').decode('ascii') or 'file'
+        encoded_filename = quote(filename, safe='')
+        
+        # Use both filename (ASCII fallback) and filename* (UTF-8 encoded) for maximum compatibility
+        content_disposition = f'inline; filename="{ascii_filename}"; filename*=UTF-8\'\'{encoded_filename}'
 
         # Return file with inline disposition header for browser viewing
         return FileResponse(
             path=file_path,
             media_type=media_type,
-            headers={"Content-Disposition": f'inline; filename="{safe_filename}"'}
+            headers={"Content-Disposition": content_disposition}
         )
     except HTTPException:
         raise
