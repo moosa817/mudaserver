@@ -84,9 +84,14 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         ascii_filename = filename.encode('ascii', 'ignore').decode('ascii')
         if not ascii_filename:
             # If filename is entirely non-ASCII, use 'file' + original extension
+            # ext is already validated to be in VIEWABLE_TYPES, so it's safe
             ascii_filename = f'file{ext}'
-        # Escape quotes and backslashes in ASCII filename to prevent header injection
-        ascii_filename = ascii_filename.replace('\\', '\\\\').replace('"', '\\"')
+        # Escape special characters to prevent header injection (quotes, backslashes, CRLF)
+        ascii_filename = (ascii_filename
+                         .replace('\\', '\\\\')
+                         .replace('"', '\\"')
+                         .replace('\r', '')
+                         .replace('\n', ''))
         encoded_filename = quote(filename, safe='')
 
         # Use both filename (ASCII fallback) and filename* (UTF-8 encoded) for maximum compatibility
