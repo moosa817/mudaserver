@@ -68,20 +68,23 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         if ext not in VIEWABLE_TYPES:
             raise HTTPException(
                 status_code=400,
-                detail=f"File type '{ext}' is not supported for inline viewing. Supported types: {', '.join(VIEWABLE_TYPES.keys())}"
+                detail=f"File type '{ext}' is not supported for inline viewing."
             )
 
         # Get the proper media type for the file
         media_type = VIEWABLE_TYPES[ext]
         
-        # Get filename for Content-Disposition header
+        # Get filename for Content-Disposition header and sanitize it
         filename = os.path.basename(file_path)
+        # Sanitize filename by removing/escaping characters that could break HTTP headers
+        # Replace quotes and backslashes with underscores to prevent header injection
+        safe_filename = filename.replace('"', '_').replace('\\', '_').replace('\n', '_').replace('\r', '_')
 
         # Return file with inline disposition header for browser viewing
         return FileResponse(
             path=file_path,
             media_type=media_type,
-            headers={"Content-Disposition": f'inline; filename="{filename}"'}
+            headers={"Content-Disposition": f'inline; filename="{safe_filename}"'}
         )
     except HTTPException:
         raise
