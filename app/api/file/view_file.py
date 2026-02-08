@@ -81,7 +81,12 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         # Sanitize and encode filename for Content-Disposition header
         # Use ASCII fallback for filename and RFC 5987 encoding for filename*
         # This ensures proper handling of Unicode characters across all browsers
-        ascii_filename = filename.encode('ascii', 'ignore').decode('ascii') or f'file{ext}'
+        ascii_filename = filename.encode('ascii', 'ignore').decode('ascii')
+        if not ascii_filename:
+            # If filename is entirely non-ASCII, use 'file' + original extension
+            ascii_filename = f'file{ext}'
+        # Escape quotes and backslashes in ASCII filename to prevent header injection
+        ascii_filename = ascii_filename.replace('\\', '\\\\').replace('"', '\\"')
         encoded_filename = quote(filename, safe='')
 
         # Use both filename (ASCII fallback) and filename* (UTF-8 encoded) for maximum compatibility
