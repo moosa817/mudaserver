@@ -29,7 +29,7 @@ VIEWABLE_TYPES = {
     ".webm": "video/webm",
     ".mov": "video/quicktime",
     # Audio
-    ".mp3": "audio/mpeg",
+    ".mp3": "audio/mpeg",  # RFC-compliant MIME type (not "audio/mp3")
     ".wav": "audio/wav",
     ".ogg": "audio/ogg",
 }
@@ -73,12 +73,15 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
 
         # Get the proper media type for the file
         media_type = VIEWABLE_TYPES[ext]
+        
+        # Get filename for Content-Disposition header
+        filename = os.path.basename(file_path)
 
         # Return file with inline disposition header for browser viewing
         return FileResponse(
             path=file_path,
             media_type=media_type,
-            headers={"Content-Disposition": "inline"}
+            headers={"Content-Disposition": f'inline; filename="{filename}"'}
         )
     except HTTPException:
         raise
