@@ -10,6 +10,9 @@ from urllib.parse import quote
 logger = logging.getLogger(__name__)
 view_router = APIRouter()
 
+# Maximum file size for inline viewing (30MB)
+MAX_VIEW_SIZE = 30 * 1024 * 1024  # 30MB in bytes
+
 # Dictionary mapping file extensions to proper MIME types for viewable files
 VIEWABLE_TYPES = {
     # Images
@@ -63,13 +66,41 @@ async def view_file(path: str, user: User = Depends(get_current_user)):
         if not os.path.isfile(file_path):
             raise HTTPException(status_code=400, detail="Path is not a file")
 
+        # Check file size (30MB limit for inline viewing)
+        file_size = os.path.getsize(file_path)
+
+        if file_size > MAX_VIEW_SIZE:
+            filename = os.path.basename(file_path)
+            download_url = f"/api/file/download/{quote(path)}"
+            
+            raise HTTPException(
+                status_code=413,  # Payload Too Large
+                detail={
+                    "error": "file_too_large",
+                    "message": f"File is too large for inline viewing ({file_size / (1024*1024):.2f} MB). Please download instead.",
+                    "file_size": file_size,
+                    "size_limit": MAX_VIEW_SIZE,
+                    "download_url": download_url,
+                    "filename": filename
+                }
+            )
+
         ext = os.path.splitext(file_path)[1].lower()
 
         # Validate that file type is viewable
         if ext not in VIEWABLE_TYPES:
+            filename = os.path.basename(file_path)
+            download_url = f"/api/file/download/{quote(path)}"
+            
             raise HTTPException(
-                status_code=400,
-                detail=f"File type '{ext}' is not supported for inline viewing."
+                status_code=415,  # Unsupported Media Type
+                detail={
+                    "error": "unsupported_file_type",
+                    "message": f"File type '{ext}' cannot be viewed in browser. Please download instead.",
+                    "file_extension": ext,
+                    "download_url": download_url,
+                    "filename": filename
+                }
             )
 
         # Get the proper media type for the file
