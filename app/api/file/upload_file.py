@@ -1,11 +1,14 @@
 from fastapi import APIRouter, Depends, File, Form, UploadFile, HTTPException
 from fastapi.responses import JSONResponse
-from app.api.dependencies import get_current_user
+from sqlalchemy.orm import Session
+from app.api.dependencies import get_current_user, get_db
 from app.models.user import User
+from app.models.device import Device
 from app.core.config import config
 from app.services.upload.progress_tracker import progress_tracker  # ✅ Add this
 import os
 import aiofiles
+from typing import Optional
 
 upload_router = APIRouter()
 
@@ -13,14 +16,29 @@ upload_router = APIRouter()
 @upload_router.post("/upload-chunk")
 async def upload_chunk(
     user: User = Depends(get_current_user),
+    db: Session = Depends(get_db),
     file_id: str = Form(...),
     chunk_index: int = Form(...),
     total_chunks: int = Form(...),
     file: UploadFile = File(...),
     folder_path: str = Form("root"),
+    device_id: Optional[str] = Form(None),
 ):
     folder_path = folder_path.strip().lower()
     base_dir = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+    
+    # If device_id is provided, scope to device folder
+    if device_id:
+        device = db.query(Device).filter(
+            Device.device_id == device_id,
+            Device.user_id == user.id
+        ).first()
+        
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+        
+        base_dir = os.path.join(base_dir, device.folder_name)
+    
     if folder_path != "root":
         base_dir = os.path.join(base_dir, folder_path)
     os.makedirs(base_dir, exist_ok=True)
