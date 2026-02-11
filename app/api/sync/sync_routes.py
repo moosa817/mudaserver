@@ -1,6 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from app.api.dependencies import get_current_user
+from sqlalchemy.orm import Session
+from app.api.dependencies import get_current_user, get_db
 from app.models.user import User
+from app.models.device import Device
+from app.schemas.device import SyncCompleteRequest
 from pydantic import BaseModel
 import os
 from app.core.config import config
@@ -35,6 +38,7 @@ class FileCheckItem(BaseModel):
 
 
 class BatchSyncCheckRequest(BaseModel):
+    device_id: Optional[str] = None
     files: List[FileCheckItem]
 
 
@@ -88,6 +92,31 @@ def validate_path_security(file_path: str, base_path: str) -> str:
     return full_path
 
 
+def get_device_base_path(device_id: Optional[str], user: User, db: Session) -> tuple[str, Optional[Device]]:
+    """
+    Get the base path for file operations, scoped to device folder if device_id is provided.
+    Returns (base_path, device_object)
+    """
+    user_base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+    
+    if device_id:
+        # Validate device belongs to user
+        device = db.query(Device).filter(
+            Device.device_id == device_id,
+            Device.user_id == user.id
+        ).first()
+        
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+        
+        # Return device-scoped path
+        device_path = os.path.join(user_base_path, device.folder_name)
+        return device_path, device
+    
+    # Return user root path (backward compatibility)
+    return user_base_path, None
+
+
 def parse_iso_datetime(timestamp_str: str) -> datetime:
     """
     Parse ISO datetime string, handling both 'Z' suffix and timezone offsets.
@@ -104,14 +133,17 @@ def parse_iso_datetime(timestamp_str: str) -> datetime:
 @syncrouter.get("/file-hash", response_model=FileHashResponse)
 async def get_file_hash(
     file_path: str = Query(..., description="Relative path of the file within user's storage"),
-    user: User = Depends(get_current_user)
+    device_id: Optional[str] = Query(None, description="Device ID for device-scoped sync"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Get the hash and metadata of a file on the server.
+    If device_id is provided, file is scoped to device folder.
     """
     try:
         file_path = file_path.strip()
-        base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+        base_path, device = get_device_base_path(device_id, user, db)
         full_path = validate_path_security(file_path, base_path)
         
         if not os.path.exists(full_path):
@@ -140,13 +172,15 @@ async def get_file_hash(
 @syncrouter.post("/check", response_model=BatchSyncCheckResponse)
 async def batch_sync_check(
     request: BatchSyncCheckRequest,
-    user: User = Depends(get_current_user)
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Check sync status for multiple files at once.
+    If device_id is provided in request, files are scoped to device folder.
     """
     try:
-        base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+        base_path, device = get_device_base_path(request.device_id, user, db)
         results = []
         
         for file_item in request.files:
@@ -215,13 +249,16 @@ async def batch_sync_check(
 @syncrouter.get("/list-all", response_model=ListAllFilesResponse)
 async def list_all_files(
     folder_path: Optional[str] = Query("", description="Limit to a specific folder, defaults to root"),
-    user: User = Depends(get_current_user)
+    device_id: Optional[str] = Query(None, description="Device ID for device-scoped sync"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     List all files in the user's storage with their hashes and metadata.
+    If device_id is provided, files are scoped to device folder.
     """
     try:
-        base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+        base_path, device = get_device_base_path(device_id, user, db)
         
         # Validate folder path
         if folder_path:
@@ -301,14 +338,17 @@ async def list_all_files(
 @syncrouter.delete("/delete", response_model=DeleteFileResponse)
 async def delete_file_sync(
     file_path: str = Query(..., description="Relative path of the file to delete"),
-    user: User = Depends(get_current_user)
+    device_id: Optional[str] = Query(None, description="Device ID for device-scoped sync"),
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
 ):
     """
     Delete a file that was deleted locally (for two-way sync).
+    If device_id is provided, file is scoped to device folder.
     """
     try:
         file_path = file_path.strip()
-        base_path = os.path.join(config.DIR_LOCATION, "data", user.root_foldername)
+        base_path, device = get_device_base_path(device_id, user, db)
         full_path = validate_path_security(file_path, base_path)
         
         if not os.path.exists(full_path):
@@ -330,3 +370,45 @@ async def delete_file_sync(
     except Exception as e:
         logger.error(f"Error deleting file: {e}", exc_info=True)
         raise HTTPException(status_code=500, detail="Failed to delete file")
+
+
+@syncrouter.post("/complete")
+async def sync_complete(
+    request: SyncCompleteRequest,
+    user: User = Depends(get_current_user),
+    db: Session = Depends(get_db)
+):
+    """
+    Update device sync timestamp and statistics after sync completion.
+    """
+    try:
+        device = db.query(Device).filter(
+            Device.device_id == request.device_id,
+            Device.user_id == user.id
+        ).first()
+        
+        if not device:
+            raise HTTPException(status_code=404, detail="Device not found")
+        
+        # Update sync statistics
+        device.last_sync_at = datetime.now(timezone.utc)
+        device.last_sync_files_count = request.files_synced
+        device.last_sync_bytes = request.bytes_synced
+        
+        db.commit()
+        db.refresh(device)
+        
+        logger.info(f"Sync completed for device {request.device_id}: {request.files_synced} files, {request.bytes_synced} bytes")
+        
+        return {
+            "device_id": device.device_id,
+            "last_sync_at": device.last_sync_at.isoformat(),
+            "message": "Sync completed"
+        }
+    
+    except HTTPException:
+        raise
+    except Exception as e:
+        db.rollback()
+        logger.error(f"Error completing sync: {e}", exc_info=True)
+        raise HTTPException(status_code=500, detail="Failed to complete sync")

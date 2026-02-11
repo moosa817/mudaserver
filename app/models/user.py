@@ -28,3 +28,4 @@ class User(Base):
         "Folder", back_populates="user", cascade="all, delete-orphan"
     )
     files = relationship("File", back_populates="user", cascade="all, delete-orphan")
+    devices = relationship("Device", back_populates="user", cascade="all, delete-orphan")
