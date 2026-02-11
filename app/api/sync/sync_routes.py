@@ -88,6 +88,19 @@ def validate_path_security(file_path: str, base_path: str) -> str:
     return full_path
 
 
+def parse_iso_datetime(timestamp_str: str) -> datetime:
+    """
+    Parse ISO datetime string, handling both 'Z' suffix and timezone offsets.
+    
+    Args:
+        timestamp_str: ISO format datetime string
+    
+    Returns:
+        datetime object with timezone
+    """
+    return datetime.fromisoformat(timestamp_str.replace('Z', '+00:00'))
+
+
 @syncrouter.get("/file-hash", response_model=FileHashResponse)
 async def get_file_hash(
     file_path: str = Query(..., description="Relative path of the file within user's storage"),
@@ -161,8 +174,8 @@ async def batch_sync_check(
                 server_modified = metadata["modified_at"]
                 
                 # Parse modification times
-                local_modified_dt = datetime.fromisoformat(file_item.local_modified.replace('Z', '+00:00'))
-                server_modified_dt = datetime.fromisoformat(server_modified.replace('Z', '+00:00'))
+                local_modified_dt = parse_iso_datetime(file_item.local_modified)
+                server_modified_dt = parse_iso_datetime(server_modified)
                 
                 # Determine sync status
                 if server_hash == file_item.local_hash:
