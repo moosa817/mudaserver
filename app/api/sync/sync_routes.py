@@ -6,7 +6,7 @@ import os
 from app.core.config import config
 from app.services.sync.hash_utils import calculate_file_hash, get_file_metadata
 from typing import List, Optional
-from datetime import datetime
+from datetime import datetime, timezone
 import logging
 
 logger = logging.getLogger(__name__)
@@ -233,7 +233,6 @@ async def list_all_files(
                 
                 try:
                     stat_info = os.stat(dir_full_path)
-                    from datetime import datetime, timezone
                     modified_at = datetime.fromtimestamp(stat_info.st_mtime, tz=timezone.utc)
                     
                     files.append(FileItem(

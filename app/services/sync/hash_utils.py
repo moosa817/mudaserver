@@ -1,5 +1,6 @@
 import hashlib
 import os
+from datetime import datetime, timezone
 
 
 def calculate_file_hash(file_path: str, algorithm: str = "md5") -> str:
@@ -38,7 +39,6 @@ def get_file_metadata(file_path: str) -> dict:
     stat_info = os.stat(file_path)
     file_hash = calculate_file_hash(file_path)
     
-    from datetime import datetime, timezone
     modified_at = datetime.fromtimestamp(stat_info.st_mtime, tz=timezone.utc)
     
     return {
