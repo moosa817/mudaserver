@@ -2,6 +2,10 @@ import hashlib
 import os
 from datetime import datetime, timezone
 
+# Chunk size for reading files during hash calculation
+# 8KB is a good balance between memory usage and I/O performance
+CHUNK_SIZE = 8192
+
 
 def calculate_file_hash(file_path: str, algorithm: str = "md5") -> str:
     """
@@ -17,7 +21,7 @@ def calculate_file_hash(file_path: str, algorithm: str = "md5") -> str:
     hash_func = hashlib.md5() if algorithm == "md5" else hashlib.sha256()
     
     with open(file_path, "rb") as f:
-        for chunk in iter(lambda: f.read(8192), b""):
+        for chunk in iter(lambda: f.read(CHUNK_SIZE), b""):
             hash_func.update(chunk)
     
     return hash_func.hexdigest()

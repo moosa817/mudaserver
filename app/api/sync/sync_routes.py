@@ -13,6 +13,11 @@ logger = logging.getLogger(__name__)
 
 syncrouter = APIRouter()
 
+# Conflict detection threshold in seconds
+# If file modification times differ by less than this, it's considered a conflict
+# 60 seconds allows for minor clock skew between client and server
+CONFLICT_THRESHOLD_SECONDS = 60
+
 
 # Pydantic models
 class FileHashResponse(BaseModel):
@@ -166,7 +171,7 @@ async def batch_sync_check(
                     # Hashes differ, check modification times
                     time_diff = abs((server_modified_dt - local_modified_dt).total_seconds())
                     
-                    if time_diff < 60:  # Less than 1 minute difference
+                    if time_diff < CONFLICT_THRESHOLD_SECONDS:
                         status = "conflict"
                     elif server_modified_dt > local_modified_dt:
                         status = "server_newer"
