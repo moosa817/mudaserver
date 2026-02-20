@@ -20,10 +20,6 @@ class Settings(BaseSettings):
     # Database
     DATABASE_URL: str
 
-    # jwt token expiry time
-    ACCESS_TOKEN_EXPIRE_MINUTES: int = 60  # 1 hours
-    REFRESH_TOKEN_EXPIRE_DAYS: int = 60  # 60 days
-
     # http basic auth
     HTTP_AUTH_USERNAME: str
     HTTP_AUTH_PASSWORD: str
