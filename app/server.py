@@ -1,4 +1,8 @@
+import os
+
 from fastapi import FastAPI, Request
+from fastapi.staticfiles import StaticFiles
+import app
 from app.apirouter import api_router  # ✅ Correct import
 from app.core.config import config
 from fastapi.exceptions import RequestValidationError
@@ -36,6 +40,7 @@ def create_app():
     )
 
     app.include_router(api_router, prefix="/api")
+    app.include_router
 
     @app.exception_handler(RequestValidationError)
     async def validation_exception_handler(

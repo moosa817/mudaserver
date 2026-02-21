@@ -24,6 +24,10 @@ class Settings(BaseSettings):
     HTTP_AUTH_USERNAME: str
     HTTP_AUTH_PASSWORD: str
 
+    # path where media files are stored (~/mudata/photos/ALL)
+    MEDIA_PATH: str
+    THUMBS_PATH: str
+
     model_config = SettingsConfigDict(env_file=".env")
 
 
